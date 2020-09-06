@@ -1,5 +1,4 @@
-bplist00?_WebMainResource?	
-_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingName^WebResourceURL_WebResourceFrameNameO?<html><head></head><body><pre style="word-wrap: break-word; white-space: pre-wrap;">---
+---
 title: "JOUR472/772 lab_01 | workbook"
 author: "Sean Mussenden"
 date: "9/4/2020"
@@ -99,4 +98,3 @@ covid_state_current
 ## Workbook complete
 
 You're finished this workbook, but not this week's lab.  Save your changes, and go back to the webpage for the lab for next steps.
-</pre></body></html>Ztext/plainUUTF-8_{https://raw.githubusercontent.com/smussenden/20_fall_data_journalism/master/labs/lab_01/lab_01_workbook/lab_01_workbook.RmdP
