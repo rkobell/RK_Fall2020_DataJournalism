@@ -1,0 +1,100 @@
+---
+title: "JOUR472/772 lab_01 | workbook"
+author: "Sean Mussenden"
+date: "9/4/2020"
+output: html_document
+---
+
+## About this workbook
+
+As you watch the video, follow along with me in this file, running pre-written code as I instruct. When you see **Task**, that's a signal you need to write some code of your own.
+
+## About R markdown 
+
+This is an R Markdown document, which we'll be using to create data notebooks this semester that combine text and code. We'll use it to load, clean, analyze and visualize data.  And, eventually, we'll use these files to produce a publishable webpage. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.  
+
+## Text 
+
+Above, "About R Markdown" is an example of a text header.  The sentence that begins "This is an R Markdown document..." is an example of a text sentence.  We use text to write up findings and put findings in context.  The text we write doesn't affect the code we write in the documents. 
+
+## Codeblocks
+
+We'll write code inside of "codeblocks", special sections of the document that are set up to execute code. Here's an empty codeblock.
+
+```{r}
+
+```
+
+And here's a codeblock that contains one very simple line of code, a function that prints out my name. 
+
+**Task**: Run it now, using the methods described in the video. The code executes below the codeblock, and in the console below.   
+
+```{r}
+
+print("Sean Mussenden")
+
+```
+
+We can include text inside of codeblocks, as comments to explain what our code is doing line by line.  When we use the correct format for comments -- starts with a # -- R knows to ignore them.
+
+**Task**: Run this block now.
+
+```{r}
+# This function prints out my name
+print("Sean Mussenden")
+
+```
+
+If we don't include the hashtag, R attempts to execute it. It throws an error. Get used to seeing errors this semester.  Even advanced data journalists run into them all the time, and part of the skill we'll develop in this class is how to solve errors, to debug.    
+
+**Task**: Run this block now.
+
+```{r}
+
+This function prints out my name
+print("Sean Mussenden")
+
+```
+
+**Task**: In the empty codeblock below, write the function to print out your own name and run it.  Include a comment inside the codeblock that explains what you're doing. If you get an error, compare your code to my code on line 38. 
+
+```{r}
+
+```
+
+## Load data 
+
+We're going to load a very simple data set, so that I can show you some additional features of R Studio. [The New York Times COVID-19 data tracking project](https://github.com/nytimes/covid-19-data) has released detailed information on the number of COVID-19 cases and deaths across the U.S. 
+
+We're going to read in data from the project so we can examine it in RSTudio.  
+
+In this data set we're going to read in, there's one row -- or observation -- that represents the state of play with COVID in a particular state on a particular date, going back to January.  For each state on each date, we know the cumuluative number of cases and deaths from COVID as tabulated by Times reporters.  The column labeled "fips" is a unique numerical identifier for each state. 
+
+This is stored in a common data format, called a CSV, that we'll see over and over again throughout the semester. It's a simple type of spreadsheet, with data organized -- structured -- into rows and columns.
+
+The codeblock below reads in the CSV and gives it a name, a name we can refer to later when writing code. 
+
+**Task**: Run this block now.
+
+```{r}
+
+covid_state_current <- read.csv("https://raw.githubusercontent.com/smussenden/20_fall_data_journalism/master/labs/lab_01/lab_01_workbook/lab_01_data/covid_state_current_08_31_2020.csv")
+
+
+```
+
+The environment window gives us clues about the data set.  We can open it up and explore it like a spreadsheet. In R, this is called a dataframe. 
+
+**Task**: explore the data as I did in the video.
+
+And we can look at the first few rows by writing the name of this dataframe in the codeblock. 
+
+**Task**: Run this block now.
+
+```{r}
+covid_state_current
+```
+
+## Workbook complete
+
+You're finished this workbook, but not this week's lab.  Save your changes, and go back to the webpage for the lab for next steps.
