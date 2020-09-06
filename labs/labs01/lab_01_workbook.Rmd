@@ -79,7 +79,7 @@ The codeblock below reads in the CSV and gives it a name, a name we can refer to
 
 ```{r}
 
-covid_state_current &lt;- read.csv("https://raw.githubusercontent.com/smussenden/20_fall_data_journalism/master/labs/lab_01/lab_01_workbook/lab_01_data/covid_state_current_08_31_2020.csv")
+covid_state_current <-read.csv("https://raw.githubusercontent.com/smussenden/20_fall_data_journalism/master/labs/lab_01/lab_01_workbook/lab_01_data/covid_state_current_08_31_2020.csv")
 
 
 ```
