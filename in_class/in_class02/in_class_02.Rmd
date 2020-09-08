@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## About this notebook 
+## About this notebook s
 
 This notebook is designed as an in-class introduction to concepts we'll delve deeper into during lab_02.  They include technical concepts like:
 
