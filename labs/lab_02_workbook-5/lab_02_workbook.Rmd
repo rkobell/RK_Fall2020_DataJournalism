@@ -144,11 +144,9 @@ Here are some great resources for getting help with loading data using readr.
 **Task (Write Code and Run It)**: There's a csv file in the data folder called "arcos-md-baltimore-city-24510-pharmacy.csv".  It contains the same type of information as the Mingo, WV file we read in above, but it has pill and shipment totals per pharmacy in Baltimore City.  
 
 In the empty codeblock below, read in the Baltimore data and store it as an object called acros_md_baltimorecity
-
 ```{r}
-
+arcos_md_baltimorecity <- read_csv("data/arcos-md-baltimore-city-24510-pharmacy.csv")
 ```
-
 **Details in Video**: I'll show you the answer, and review some common mistakes. (My notes: Show answer, show what happens if they screw up the file path) 
 
 ## Examining data
@@ -173,9 +171,9 @@ glimpse(arcos_wv_mingo)
 ```{r}
 
 ```
-
+glimpse (arcos_md_baltimorecity)
 ### Option 2: display the data in the markdown document
-
+glimpse (arcos_md_baltimorecity)
 By just writing the name of the object we want to explore, we can display it in our markdown document. 
 
 **Task (Run Code)**: run the codeblock below to display the Mingo, WV data in the markdown document. 
@@ -198,7 +196,7 @@ arcos_wv_mingo
 ### Option 3: open the data from the environment window
 
 We can also click on the object name in the environment window and interact with it. 
-
+arcos_md_baltimorecity
 **Details in Video**: I'll show you how to do this. (My notes: Review how to do this)
  
 ## Selecting Data
@@ -253,7 +251,7 @@ arcos_wv_mingo_pharmacies <- arcos_wv_mingo %>%
 
 ```{r}
 
-
+arcos_md_baltimorecity_pharmacies <- arcos_md_baltimorecity %>% select(buyer_name)
 ```
 
 **Details in Video**: I'll show you how to complete the task above. 
@@ -283,8 +281,8 @@ The following code selects the last five columns of our Mingo, WV data and store
 
 ```{r}
 
-arcos_wv_mingo_trimmed <- arcos_wv_mingo %>%
-  select(buyer_name, buyer_dea_no, buyer_city, total_dosage_unit, total_records)
+arcos_wv_mingo_trimmed_new <- arcos_wv_mingo %>%
+  select
 
 ```
 
@@ -295,8 +293,9 @@ There's a lot more we can do with `select()`, but that's enough to get started. 
 **Task (Write Code and Run it)**: In the empty codeblock below, select the last five columns of the Baltimore data, and store it as an object called arcos_wv_baltimorecity_trimmed.  
 
 ```{r}
-
-
+arcos_md_baltimorecity_trimmed <- arcos_md_baltimorecity %>% select (buyer_name, buyer_dea_no, buyer_city, total_dosage_unit, total_records)
+arcos_wv_mingo_trimmed <- arcos_wv_mingo %>%
+  select(buyer_name, buyer_dea_no, buyer_city, total_dosage_unit, total_records)
 ```
 
 **Details in Video**: I'll show you the answer to the above block. 
@@ -365,7 +364,9 @@ arcos_wv_mingo_sorted <- arcos_wv_mingo_trimmed %>%
 **Task (Write Code and Run It)**: Now it's your turn. Write the code below to answer the question: "Which pharmacy in Baltimore City, Maryland had the most pills sent to it between 2006 and 2014?" Hint: use the arcos_md_baltimorecity_trimmed dataframe as a starting point to answer this question.
 
 ```{r}
+#Answer New Care Home Health Services
 
+arcos_md_baltimorecity_sorted <- arcos_md_baltimorecity_trimmed %>% arrange(desc(total_dosage_unit))
 
 ```
 
@@ -399,14 +400,14 @@ Answer the question below by writing code in the empty codeblock.  Edit the comm
 **Task (Write Code and Run It)**: 1. In Baltimore City, which pharmacy got the most shipments between 2006 and 2014? How many shipments did it get?  Hint: the total_records column reflects the number of shipments
 
 ```{r}
-# Answer to question 1: 
+# Answer to question 1: New Care Health Services, 6,133,600 shipments
 
 ```
 
 **Task (Write Code and Run It)**: 2. In Baltimore City, which pharmacy got the smallest number of pills between 2006 and 2014? How many pills did it get?  Hint: the total_dosage_unit column reflects the number of pills.
 
 ```{r}
-# Answer to question 2: 
+# Answer to question 2: Julian Jakobovits, 5 pills
 
 ```
 
