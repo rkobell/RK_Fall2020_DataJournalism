@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## About this notebook 
+## About this notebook  
 
 This notebook will review the concepts introduced in the in_class_03 assignment:  
 
