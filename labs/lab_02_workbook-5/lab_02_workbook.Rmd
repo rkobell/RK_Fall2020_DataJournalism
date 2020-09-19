@@ -169,7 +169,7 @@ glimpse(arcos_wv_mingo)
 **Task (Write Code and Run It)**: Now it's your turn. In the empty codeblock below, use the `glimpse()` function to get a sense of the Baltimore data you loaded above. 
 
 ```{r}
-
+glimpse (arcos_md_baltimorecity)
 ```
 glimpse (arcos_md_baltimorecity)
 ### Option 2: display the data in the markdown document
@@ -190,7 +190,7 @@ arcos_wv_mingo
 **Task (Write Code and Run It)**: Now it's your turn. In the empty codeblock below, display the Baltimore data in the markdown document. 
 
 ```{r}
-
+(arcos_md_baltimorecity)
 ```
 
 ### Option 3: open the data from the environment window
@@ -239,10 +239,8 @@ We can also store this as a new object called "arcos_wv_mingo_pharmacies", which
 **Task (Run Code)**: run the codeblock below to select the column buyer_name and exclude all of the others, storing it as a new object called arcos_wv_mingo_pharmacies.  
 
 ```{r}
-
 arcos_wv_mingo_pharmacies <- arcos_wv_mingo %>%
   select(buyer_name)
-
 ```
 
 **Details in Video**: I'll breakdown what the code above does and show you some details about creating objects.  (My notes: Show storing object doesn't overwrite original data. Show how to overwrite the original data, then go back up and read it in again)
@@ -364,9 +362,9 @@ arcos_wv_mingo_sorted <- arcos_wv_mingo_trimmed %>%
 **Task (Write Code and Run It)**: Now it's your turn. Write the code below to answer the question: "Which pharmacy in Baltimore City, Maryland had the most pills sent to it between 2006 and 2014?" Hint: use the arcos_md_baltimorecity_trimmed dataframe as a starting point to answer this question.
 
 ```{r}
-#Answer New Care Home Health Services
 
-arcos_md_baltimorecity_sorted <- arcos_md_baltimorecity_trimmed %>% arrange(desc(total_dosage_unit))
+arcos_md_baltimorecity_sorted <- arcos_md_baltimorecity_trimmed %>%
+  arrange(total_dosage_unit)
 
 ```
 
@@ -400,15 +398,24 @@ Answer the question below by writing code in the empty codeblock.  Edit the comm
 **Task (Write Code and Run It)**: 1. In Baltimore City, which pharmacy got the most shipments between 2006 and 2014? How many shipments did it get?  Hint: the total_records column reflects the number of shipments
 
 ```{r}
-# Answer to question 1: New Care Health Services, 6,133,600 shipments
 
+arcos_md_baltimorecity_trimmed_sorted <- arcos_md_baltimorecity %>%
+  select(buyer_dea_no, buyer_name, buyer_city, total_dosage_unit, total_records) %>%
+  arrange(desc(total_records))
+arcos_md_baltimorecity_trimmed_sorted
+# Answer to question 1: 
+# Giant Pharmacy 166
 ```
 
 **Task (Write Code and Run It)**: 2. In Baltimore City, which pharmacy got the smallest number of pills between 2006 and 2014? How many pills did it get?  Hint: the total_dosage_unit column reflects the number of pills.
 
 ```{r}
-# Answer to question 2: Julian Jakobovits, 5 pills
+# Answer to question 2: OShinsky and Jakobovits
+arcos_md_baltimorecity_trimmed_sorted <- arcos_md_baltimorecity %>%
+  select(buyer_dea_no, buyer_name, buyer_city, total_dosage_unit)%>%
+arrange(total_dosage_unit)
 
+arcos_md_baltimorecity_trimmed_sorted
 ```
 
 ## You're Done

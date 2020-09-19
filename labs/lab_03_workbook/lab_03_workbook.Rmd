@@ -90,7 +90,7 @@ allowfullscreen = FALSE, query = NULL)
 **Task (Edit and Run Code)**: In the codeblock below, edit code as instructed in the previous video to load death rate data.
 
 ```{r}
-covid_county_monthly_death_rate <- read_csv("data/covid_county_monthly_case_rate.csv")
+covid_county_monthly_death_rate <- read_csv("data/covid_county_monthly_death_rate.csv")
 ```
 
 ## Examining data with glimpse()
@@ -231,7 +231,7 @@ covid_four_plus_august_death_rate <- covid_county_monthly_death_rate %>%
 covid_four_plus_august_death_rate
 
 # Q: "How many areas in the U.S. had a death rate above 4 per 1,000 in August? Which ones were they?"
-# A: 
+# A: Hancock and Galax City, Va.
 
 ```
 
@@ -261,7 +261,7 @@ covid_maryland_one_plus_august_death_rate <- covid_county_monthly_death_rate %>%
 covid_maryland_one_plus_august_death_rate
 
 # Q: "Which Maryland counties had a death rate higher than 1 per 1,000 in August?"
-# A: 10 counties? Listed below? I did not get the same code that is in the video.
+# Kent
 
 
 ```
@@ -408,11 +408,13 @@ Pay close attention to exactly what the questions are asking.  Imagine you're go
 
 ```{r}
 covid_county_jun_aug_pct_change <- covid_county_monthly_case_rate %>%
-  select(county, state, d_2020_07_30, d_2020_08_30) %>%
+  select(county, state, d_2020_06_30, d_2020_08_30) %>%
   filter(state == "Maryland") %>%
-  mutate(jun_aug_pct_change = (d_2020_08_30 - d_2020_07_30)/d_2020_07_30) %>%
+  mutate(jun_aug_pct_change = (d_2020_08_30 - d_2020_06_30)/d_2020_06_30) %>%
   arrange(desc(jun_aug_pct_change))
 
+covid_county_jun_aug_pct_change
+# Garrett County
 ```
 
 
@@ -423,18 +425,20 @@ covid_county_jun_aug_pct_change <- covid_county_monthly_case_rate %>%
 # Q: which Maryland county had the largest percentage change in cumulative death rate between June and August? 
 # A: Baltimore City and Worcester County
 
-```
 
 ### Exercise 2
 
 **Task (Create a Codeblock, Write and Run Code): ** In the codeblock below, answer the question: which Texas county had the smallest percentage change in cumulative case rate between May and August? You'll need to create a codeblock. 
 
-```{r}
+```{r} 
 covid_county_may_aug_pct_change <- covid_county_monthly_case_rate %>%
 select(county, state, d_2020_05_30, d_2020_08_30) %>%
 filter(state == "Texas") %>%
 mutate(may_aug_pct_change = (d_2020_08_30 - d_2020_05_30)/d_2020_05_30) %>%
-arrange(desc(may_aug_pct_change))
+arrange(may_aug_pct_change)
+
+covid_county_may_aug_pct_change
+# Jones County
 ```
 
 ### Exercise 3
@@ -447,6 +451,7 @@ covid_virginia_august_case_rate <- covid_county_monthly_case_rate %>%
   select(county, state, d_2020_08_30) %>%
   filter(state == "Virginia") %>%
   arrange(d_2020_08_30)
+covid_virginia_august_case_rate
 ```
 
 **Task (Create a Codeblock, Write and Run Code): ** Develop your own question, and write code to answer it below.  It can be anything you like, but be sure to use mutate() and filter() in developing an answer. 
