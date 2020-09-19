@@ -90,7 +90,7 @@ allowfullscreen = FALSE, query = NULL)
 **Task (Edit and Run Code)**: In the codeblock below, edit code as instructed in the previous video to load death rate data.
 
 ```{r}
-covid_county_monthly_death_rate <- read_csv()
+covid_county_monthly_death_rate <- read_csv("data/covid_county_monthly_case_rate.csv")
 ```
 
 ## Examining data with glimpse()
@@ -100,15 +100,16 @@ Now that we've loaded data in, there are several ways to get a general overview 
 **Task (Edit code)**:  In the empty codeblock below, edit the existing code to glimpse the covid case rate dataframe. You'll need to add the name of the dataframe inside the glimpse function. 
 ```{r}
 
-glimpse()
+glimpse(covid_county_monthly_case_rate)
 
 ```
 
 **Task (Create a Codeblock and Write Code):** Create a new codeblock below. Inside of it, write the code necessary to glimpse the covid DEATH rate dataframe.
-
-**Task (Watch Video)**: Watch the video below, and I'll review the correct answers to the glimpse function codeblocks, and review two other common methods for getting a sense of data.
-
 ```{r}
+glimpse(covid_county_monthly_case_rate)
+```
+glimpse(covid_county_monthly_death_rate)
+```
 # Video 2 
 # Click play to run the codeblock and the video will display in the markdown document. 
 embed_youtube("2LCO4xFLIbU", width = "100%", height="480", frameborder = 0,
@@ -140,7 +141,6 @@ We can filter the state column to only return Maryland data.
 **Task (Run Code)**: Run the code below to answer the question, "which Maryland county had the highest case rate on August 30?" Edit the comment at the end of the codeblock with the answer.    
 
 ```{r}
-
 # This code creates a new object called covid_maryland_august_case_rate  
 # It starts with covid_county_monthly_case_rate 
 # AND THEN selects three columns we need to answer the question 
@@ -157,7 +157,7 @@ covid_maryland_august_case_rate <- covid_county_monthly_case_rate %>%
 covid_maryland_august_case_rate
 
 # Q: Which Maryland county had the highest case rate on August 30? What was the case rate (cases per 1000)?
-# A: (Put the answer here)
+# A: (Prince George's 29.2)
 
 ```
 
@@ -173,15 +173,15 @@ covid_maryland_august_case_rate
 
 covid_virginia_august_case_rate <- covid_county_monthly_case_rate %>%
   select(county, state, d_2020_08_30) %>%
-  filter() %>%
+  filter(state == "Virginia") %>%
   arrange(d_2020_08_30)
 
 # This code displays the results of the code we created above in the markdown document
 
 covid_virginia_august_case_rate
 
-# Q: Which Virginia county had the highest case rate on August 30? What was the case rate (cases per 1000)?
-# A: 
+# Q: Which Virginia county had the LOWEST case rate on August 30? What was the case rate (cases per 1000)?
+# A: Bath 
 
 ```
 
@@ -261,7 +261,7 @@ covid_maryland_one_plus_august_death_rate <- covid_county_monthly_death_rate %>%
 covid_maryland_one_plus_august_death_rate
 
 # Q: "Which Maryland counties had a death rate higher than 1 per 1,000 in August?"
-# A: 
+# A: 10 counties? Listed below? I did not get the same code that is in the video.
 
 
 ```
@@ -276,17 +276,18 @@ covid_maryland_one_plus_august_death_rate
 # AND THEN you should edit the currently empty filter function to keep only Virginia areas with a death rate above 2
 # AND THEN sorts the August case rate from highest to lowest. 
 
-covid_virginia_one_plus_august_death_rate <- covid_county_monthly_death_rate %>%
-  select(county, state, d_2020_08_30) %>%
-  filter() %>%
-  arrange(desc(d_2020_08_30))
+covid_virginia_one_plus_august_death_rate <- 
+covid_county_monthly_death_rate %>% 
+select(county, state, d_2020_08_30) %>%
+filter(state == "Virginia", d_2020_08_30 > 2) %>%
+arrange(desc(d_2020_08_30))
 
 # This code displays the results of the code we created above in the markdown document
 
 covid_virginia_one_plus_august_death_rate
 
 # Q: "Which Virginia areas had a death rate higher than 2 per 1,000 in August? 
-# A: 
+# A: 3 Galax City, Emporia City, Northhampton
 
 ```
 
@@ -339,7 +340,7 @@ covid_county_jul_aug_change <- covid_county_monthly_case_rate %>%
 covid_county_jul_aug_change
 
 # Q: "Which county had the biggest jump in cumulative case rate between July and August?" 
-# A: 
+# A: Lafayette, Florida?
 
 ```
 
@@ -368,7 +369,7 @@ covid_county_jul_aug_pct_change <- covid_county_monthly_case_rate %>%
 covid_county_jul_aug_pct_change
 
 # Q: "Which county had the biggest percentage jump in cumulative case rate between July and August?" 
-# A: 
+# A: Luce County, Mich.
 
 ```
 
@@ -406,22 +407,51 @@ Pay close attention to exactly what the questions are asking.  Imagine you're go
 **Task (Write and Run Code): ** In the codeblock below, answer the question: which Maryland county had the largest percentage change in cumulative death rate between June and August?     
 
 ```{r}
+covid_county_jun_aug_pct_change <- covid_county_monthly_case_rate %>%
+  select(county, state, d_2020_07_30, d_2020_08_30) %>%
+  filter(state == "Maryland") %>%
+  mutate(jun_aug_pct_change = (d_2020_08_30 - d_2020_07_30)/d_2020_07_30) %>%
+  arrange(desc(jun_aug_pct_change))
+
+```
+
+
 # Write your code to answer the question below by creating a new object.
 
 # Write the name of the object you just created below so it displays below in the markdown document
 
 # Q: which Maryland county had the largest percentage change in cumulative death rate between June and August? 
-# A: write the answer here
+# A: Baltimore City and Worcester County
 
 ```
 
 ### Exercise 2
 
-**Task (Create a Codeblock, Write and Run Code): ** In the codeblock below, answer the question: which Texas county had the smallest percentage change in cumulative case rate between May and August? You'll need to create a codeblock.    
+**Task (Create a Codeblock, Write and Run Code): ** In the codeblock below, answer the question: which Texas county had the smallest percentage change in cumulative case rate between May and August? You'll need to create a codeblock. 
+
+```{r}
+covid_county_may_aug_pct_change <- covid_county_monthly_case_rate %>%
+select(county, state, d_2020_05_30, d_2020_08_30) %>%
+filter(state == "Texas") %>%
+mutate(may_aug_pct_change = (d_2020_08_30 - d_2020_05_30)/d_2020_05_30) %>%
+arrange(desc(may_aug_pct_change))
+```
 
 ### Exercise 3
 
+
+Which Virginia County had the lowest case rate on Aug. 30?
+
+```{r}
+covid_virginia_august_case_rate <- covid_county_monthly_case_rate %>%
+  select(county, state, d_2020_08_30) %>%
+  filter(state == "Virginia") %>%
+  arrange(d_2020_08_30)
+```
+
 **Task (Create a Codeblock, Write and Run Code): ** Develop your own question, and write code to answer it below.  It can be anything you like, but be sure to use mutate() and filter() in developing an answer. 
+
+The answer to above question is Bath!
 
 ## You're done
 
