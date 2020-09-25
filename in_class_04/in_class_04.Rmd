@@ -1,5 +1,5 @@
 ---
-title: "JOUR472/772 in_class_03 | heat analysis, grouping and summarizing"
+title: "JOUR472/772 in_class_04 | heat analysis, grouping and summarizing"
 author: "Sean Mussenden"
 date: "9/22/2020"
 output: 
@@ -84,7 +84,7 @@ stephanie_day_hourly_averages <- read_csv("data/temperature_sensors/stephanie/st
 **Task (Write and Run Code)**: Write code necessary to load Michael values as a new ojbject called michael_day_hourly_averages
 
 ```{r}
-
+michael_day_hourly_averages <- read_csv("data/temperature_sensors/michael/michael_day_hourly_averages.csv")
 ```
 
 ## Examine data 
@@ -94,7 +94,7 @@ Now, follow the standard steps to examine the data you loaded.
 **Task (Write and Run Code)**: run the code below to glimpse() the stephanie dataframe.
 
 ```{r}
-
+glimpse(stephanie_day_hourly_averages)
 ```
 
 **Task (Create a New Codeblock, Write Code and Run It)**: create a new codeblock and write the necessary code to display the stephanie dataframe in the markdown document below the codeblock. 
@@ -200,7 +200,7 @@ stephanie_daily_average
 
 # Write the answer in a comment
 # Q: What is the average heat index value on each day inside of Stephanie's house? Which day had the highest?
-# A: 
+# A: 7/20/2019 had the highest at 101.1.
 
 
 ```
@@ -227,7 +227,7 @@ stephanie_daily_min_max
 
 # Write the answer in a comment
 # Q: During the seven day heat wave, what was the lowest recorded heat index value in Stephanie's house?  What was the highest heat index value, and on what day did it occur?
-# A: 
+# A: lowest was 88.8.The highest was 115 degrees, and that was July 19.
 
 
 ```
@@ -237,8 +237,25 @@ stephanie_daily_min_max
 Okay, now it's your turn to examine Michael's house and answer some questions.  
 
 **Task (Create a codeblock, write and run)**: 
-
+```{r}
+michael_day_hourly_averages <- michael_day_hourly_averages%>%
+mutate(date = date(date_hour))%>%
+select(date, everything()) %>%
+filter(date >= "2019-07-16") %>%
+filter(date <= "2019-07-22")
+```
 Create a codeblock and write code necessary to output a **single table** that groups and summarizes to do the following:
+
+```{r}
+michael_daily <- michael_day_hourly_averages %>%
+  group_by(date) %>%
+  summarise(heat_index_max=max(mean_indoor_heat_index),
+              heat_index_min=min(mean_indoor_heat_index),
+              average_heat_index = mean(mean_indoor_heat_index),
+              count = n()
+  )
+michael_daily
+```
 
 * Has one row per day, but only for dates on or between July 16 and July 22
 * Has the following columns: 
@@ -250,10 +267,17 @@ Create a codeblock and write code necessary to output a **single table** that gr
 
 That should allow you to answer the following questions:
 
-* Q: What was the highest heat index value measured in Michael's house? On what day did it occur?
+* Q: What was the highest heat index value measured in Michael's house? On what day did it occur? 114.6 occurred on 7/18/2018
+
 * Q: The heat index never fell below what value during the period we measured? 
-* Q: What was the average heat index value on each day during the period measured? 
+never fell below 96 degrees.
+
+* Q: What was the average heat index value on each day during the period measured?
+The average daily over the 5 day period is 105.2 (added and divided by 5.)
+
 * Q: Is there anything concerning the number of hourly readings on each day that could affect the results you're getting?
+
+Looking at the hourly readings, the temperatures are much higher at night.Also, this talks about average and the other table talks about mean. Mean is the middle, but it is not the same as adding them all and getting an average.
   
 -30-
 
