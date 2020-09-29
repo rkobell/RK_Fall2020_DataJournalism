@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## About this notebook  
+## About this notebook 
 
 This notebook is designed as an in-class introduction to concepts we'll delve deeper into during lab_05.  In particular, it will show:
 
@@ -116,7 +116,7 @@ I'll explain by showing you what happens with Delaware. I'll also show you that 
 
 # Group by state, add up all cases for each state, sort from lowest to highest
 # I'll review what's happening here. 
-least_covid_cases_state <- covid_county %>%
+least_covid_cases_state <-covid_county %>%
   group_by(state) %>%
   summarise(total_cases = sum(cases)) %>%
   arrange(total_cases)
@@ -129,7 +129,7 @@ least_covid_cases_state
 # A: 
 ```
 
-Q: Which state had the fewest total covid cases on August 30?
+Q: Which state had the most total covid cases on August 30?
 
 **Task (Run Code)**: Run the codeblock below and examine the answer. Write the answer inside the codeblock at the bottom.   
 
@@ -147,7 +147,7 @@ most_covid_cases_state
 
 # Write the answer in a comment
 # Q: Which state had the most total covid cases on August 30? How many cases?
-# A: 
+# A: California, 706,589
 ```
 
 ## Grouping and Summarizing | Calculating averages
@@ -173,7 +173,7 @@ averages_county_cases_by_state <- covid_county %>%
 averages_county_cases_by_state
 
 # Write the answer in a comment
-# Q: Which state has the most counties in our data? How many?
+# Q: Which state has the most average highest number of cases per county? DC.
 # A: 
 ```
 
@@ -181,7 +181,7 @@ averages_county_cases_by_state
 
 This next question is not a super important question, but it helps us understand something about our data.  And it shows us how to count the number of rows. The question:  
 
-Q: Which state has the most counties in our data? How many? 
+Q: Which state has the most counties in our data? How many? Texas, 251.
 
 This time, inside of our summarize statement, instead of sum(), we have a new function, n(). 
 
@@ -209,7 +209,7 @@ most_counties_state
 
 # Write the answer in a comment
 # Q: Which state has the most counties in our data? How many?
-# A: 
+# A: Texas, 251
 ```
 
 ## Grouping and Summarizing | Calculating Min and Max
@@ -240,7 +240,7 @@ min_max_state
 
 # Write the answer in a comment
 # Q: Which state had the single county with the largest case count?  
-# A: 
+# A: California, 240,749
 
 
 ```
@@ -253,12 +253,30 @@ You can create one codeblock to answer the question, or you can create multiple 
 
 Here are the questions.  
 
-It's okay if you don't get through all of them, just get through as many as you can.  
+```{r}
+min_max_deaths <- covid_county %>%
+  group_by(state) %>%
+  summarise(max_death_state = max(deaths),
+  min_death_state = min(deaths),
+  total_deaths = sum(deaths))%>%
+  arrange(desc(total_deaths))
+min_max_deaths
+```
 
-* Q: Which state had the highest total number of deaths? 
-* Q: Which state had the lowest total number of deaths?
-* Q: Which state had the highest average number of deaths per county? What was that number? 
-* Q: Which state had the lowest average number of deaths per county? What was that number? 
+```{r}
+averages_county_deaths_by_state <- covid_county %>%
+group_by(state) %>%
+summarize(averages_county_deaths = mean(deaths)) %>%
+arrange(desc(averages_county_deaths))
+averages_county_deaths_by_state
+```
+
+It's okay if you don't get through alll of them, just get through as many as you can.  
+ 
+* Q: Which state had the highest total number of deaths? New York
+* Q: Which state had the lowest total number of deaths?Alaska
+* Q: Which state had the highest average number of deaths per county? What was that number? New Jersey 758.9
+* Q: Which state had the lowest average number of deaths per county? What was that number? Alaska
 
 If you finish all of those, create your own questions and answer them! 
 
