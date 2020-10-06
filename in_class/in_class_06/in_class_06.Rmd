@@ -96,12 +96,24 @@ Fortunately, each table shares a common field -- state -- that is populated with
 
 **Task (Run Code)**: run the necessary code below to load the two data sets we'll be using today.
 
+```{r}
+# Create a new object, covid_state_population, and join together our two fields
+state_covid_population <- state_covid %>% 
+  inner_join(state_population) 
+```
+
+state_covid_population <- state_covid %>%  inner_join(state_population) 
 
 ```{r}
 # Create a new object, covid_state_population, and join together our two fields
 
-state_covid_population <- state_covid %>%
-  inner_join(state_population)
+cases_per_1000 <- state_covid_population %>%
+mutate(cases_per_1000 = total_cases/population*1000) %>%
+arrange(desc(cases_per_1000))
+           
+ cases_per_1000
+
+
 
 ```
 Let's examine this newly created table together, and I'll walk you through what happened.
@@ -113,6 +125,8 @@ Joining gets much more complicated than this.  But at its core, this is how it w
 Okay, now it's your turn to work together in small groups to use this newly created table to answer our key question.
 
 *  Which state had the highest number of COVID-19 cases per 1,000 people on August 30, 2020?
+Louisiana
 *  And while you're at it, answer this question: Which state had the lowest number of COVID-19 deaths per 1,000 people on August 30, 2020?
+Tennessee
 
 -30-
