@@ -153,11 +153,11 @@ If you get stuck, look back at this week's in class class assignment for a clue.
 **Task (Edit and Run code)**:  In the empty codeblock below, edit the existing code to answer the question.
 ```{r}
 
-pills_per_person <- county_pills_population %>% 
-  inner_join(county_pills_per_person) 
-arrange
+county_population <- county_pills_population %>% inner_join(pills_per_person) 
+arrange(asc) 
   # add a line here to create a new column with pills per person AND THEN
   # add a line here to sort the new column from highest to lowest 
+
 
 
 # Put the answer here
