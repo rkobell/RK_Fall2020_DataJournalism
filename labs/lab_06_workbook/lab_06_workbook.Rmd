@@ -155,9 +155,9 @@ If you get stuck, look back at this week's in class class assignment for a clue.
 **Task (Edit and Run code)**:  In the empty codeblock below, edit the existing code to answer the question.
 
 ```{r}
-most_pills_per_person <- county_pills_population %>%
+pills_per_person <- county_pills_population %>%
   mutate (county_pills_per_year = average_pills_per_year) %>%
-  arrange(desc(most_pills_per_person))
+  arrange(desc(pills_per_person))
 
   # add a line here to create a new column with pills per person AND THEN
   # add a line here to sort the new column from highest to lowest 
