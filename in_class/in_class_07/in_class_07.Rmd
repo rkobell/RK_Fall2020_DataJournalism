@@ -84,7 +84,7 @@ inner_state_covid_population <- state_covid_deaths %>%
 inner_state_covid_population
 
 # Q: which states are returned by this join?
-# A: 
+# A: delaware, md, and va.
 ```
 
 
@@ -100,7 +100,7 @@ left_state_covid_population <- state_covid_deaths %>%
 left_state_covid_population
 
 # Q: which states are returned by this join?
-# A: 
+# A: del, dc, md, va.
 ```
 ### Right Join
 
@@ -114,7 +114,7 @@ right_state_covid_population <- state_covid_deaths %>%
 right_state_covid_population
 
 # Q: which states are returned by this join?
-# A: 
+# A: pa, del md, va
 ```
 ### Left Join -- Switch order of data frames
 
@@ -128,7 +128,7 @@ left_state_population_covid <- state_population %>%
 left_state_population_covid
 
 # Q: which states are returned by this join?
-# A: 
+# A: pa, va, md. del.
 ```
 ## New Joins
 
@@ -146,7 +146,7 @@ full_state_covid_population <- state_covid_deaths %>%
 full_state_covid_population
 
 # Q: which states are returned by this join?
-# A: 
+# A: Del, DC, Md, Va, Pa.
 ```
 
 ### Anti Join
@@ -163,7 +163,7 @@ anti_state_population_covid <- state_covid_deaths %>%
 anti_state_population_covid
 
 # Q: which states are returned by this join?
-# A: 
+# A: DC
 ```
 
 Now let's do the anti_join the other direction. Any record that's returned will exist in our state population table but NOT have a match in state_covid_deaths. 
@@ -176,7 +176,7 @@ anti_state_covid_population <- state_population %>%
 anti_state_covid_population
 
 # Q: which states are returned by this join?
-# A: 
+# A: PA
 ```
 
 -30-
