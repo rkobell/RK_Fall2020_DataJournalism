@@ -87,7 +87,7 @@ inner_state_covid_population
 # A: delaware, md, and va.
 ```
 
-
+ 
 ### Left Join
 
 Let's "left join" state_covid_deaths to state_population and examine which records are returned. 

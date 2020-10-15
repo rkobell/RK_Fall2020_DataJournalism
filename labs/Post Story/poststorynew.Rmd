@@ -1,0 +1,99 @@
+---
+title: "Post Story"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+```{r}
+library(tidyverse)
+library(vembedr)
+```
+
+## Reading in data
+
+
+```{r}
+homicide_data <- read_csv("data/homicide-data.csv")
+
+```
+
+```{r}
+#cleaning data
+homicide_data <- homicide_data %>%
+  mutate(reported_date = as.character(reported_date)) %>%
+  mutate(year = str_sub(reported_date, start = 1L, end = 4L))
+
+homicide_data
+
+```
+
+```{r}
+#1) As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted. City police made an arrest in 41 percent of homicides in 2014; last year (2018), the rate was just 27 percent, a 14 percentage point drop.
+
+baltimore_data <- homicide_data %>%
+  filter(city == "Baltimore")
+  
+
+baltimore_data
+  
+```
+```{r}
+#1) What is the percentage range of arrest in Baltimore between the year 2014 and 2018? As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted. City police made an arrest in 41 percent of homicides in 2014; last year (2018), the rate was just 27 percent, a 14 percentage point drop.
+
+baltimore_data_year_2014_2018 <- baltimore_data %>%
+  select(year, reported_date, city, state, disposition) %>%
+  filter(year >= "2014") %>%
+  filter(year <= "2018") %>%
+ 
+
+baltimore_data_year_2014_2018
+  
+```
+```{r}
+baltimore_data_year_pct_change <- baltimore_data_year_2014_2018 %>%
+  sort(reported_date >= "20140101") %>%
+  sort(reported_date <= "20171228")
+
+#comment: I want to create a new column that will sort the dates so that I could calculate the percentage change between year 2014 and year 2018
+
+
+baltimore_data_pct_change
+  
+```
+
+```{r}
+#2) Of 50 of the nation’s largest cities, Baltimore is one of 34 where police now make homicide arrests less often than in 2014, according to a Washington Post analysis. In Chicago, the homicide arrest rate has dropped 21 percentage points, in Boston it has dropped 12 points and in St. Louis it is down 9.
+
+#Which cities make less amount of arrest?
+
+average_amount_of_arrest <- homicide_data %>%
+  group_by(city) %>%
+  filter(year >= "2014") %>%
+  filter(year <= "2018") %>%
+  summarise(total_disposition = n()) %>%
+  arrange(desc(total_disposition))
+
+
+average_amount_of_arrest
+
+#Comment: not sure if this is what we are looking for
+```
+
+```{r}
+#3) Baltimore is also one of 30 cities that have seen an increase in homicides in recent years, with the greatest raw number increase in killings of any city other than Chicago, which has four times the population. While homicide rates remain near historical lows in most American cities, Baltimore and Chicago are now both seeing murder tallies that rival the early 2000s.
+
+
+```
+
+```{r}
+#4) While there is evidence for and against a nationwide Ferguson effect — the theory that crime increased after 2014 as police faced more scrutiny following the shooting of Michael Brown in Ferguson, Mo. — in Baltimore there is an indisputable Freddie Gray effect. As violence in the city has risen since 2015, the likelihood of a killer being arrested has dropped precipitously.
+
+
+```
