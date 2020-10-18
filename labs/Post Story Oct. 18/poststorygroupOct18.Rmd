@@ -1,6 +1,6 @@
 ---
 title: "Post Story"
-output: html_document 
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -45,15 +45,23 @@ baltimore_data
   
 ```
 ```{r}
-#1) What is the percentage range of arrest in Baltimore between the year 2014 and 2018? As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted. City police made an arrest in 41 percent of homicides in 2014; last year (2018), the rate was just 27 percent, a 14 percentage point drop.
+#1) What is the percentage hange of arrest in Baltimore between the year 2014 and 2018? As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted. City police made an arrest in 41 percent of homicides in 2014; last year (2018), the rate was just 27 percent, a 14 percentage point drop.
 
-baltimore_data_year_2014_2018 <- baltimore_data %>%
+baltimore_data_year_2014_2017 <- baltimore_data %>%
   select(year, reported_date, city, state, disposition) %>%
   filter(year >= "2014") %>%
   filter(year <= "2018") %>%
+  group_by(year, disposition) %>%
+  count() %>%
+  pivot_wider(names_from = disposition, values_from = n) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017)
  
 
-baltimore_data_year_2014_2018
+baltimore_data_year_2014_2017
+
+
   
 ```
 ```{r}
@@ -74,12 +82,22 @@ baltimore_data_pct_change
 #Which cities make less amount of arrest?
 
 average_amount_of_arrest <- homicide_data %>%
-  group_by(city) %>%
+  select(year, reported_date, city, state, disposition) %>%
   filter(year >= "2014") %>%
-  filter(year <= "2018") %>%
-  summarise(total_disposition = n()) %>%
-  arrange(desc(total_disposition))
-
+  filter(year <= "2017") %>%
+  group_by(city, year, disposition) %>%
+  count() %>%
+  pivot_wider(names_from = disposition, values_from = n) %>%
+  mutate_if(is.numeric , replace_na, replace = 0) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017) %>%
+  select(city, year, arrest_pct) %>%
+  pivot_wider(names_from = year, values_from = arrest_pct) %>%
+  mutate(pct_change = `2014` - `2017`) %>%
+  filter(pct_change >= 1) %>%
+  ungroup() %>%
+  count()
 
 average_amount_of_arrest
 
@@ -88,12 +106,22 @@ average_amount_of_arrest
 
 ```{r}
 #3) Baltimore is also one of 30 cities that have seen an increase in homicides in recent years, with the greatest raw number increase in killings of any city other than Chicago, which has four times the population. While homicide rates remain near historical lows in most American cities, Baltimore and Chicago are now both seeing murder tallies that rival the early 2000s.
+average_amount_of_killings_chicago <- homicide_data %>%
+filter(city == "Chicago") %>%
+filter(year >= "2007") %>%
+filter(year <= "2018") %>%
 
+average_amount_of_killings_baltimore <- homicide_data %>%
+filter(city == "Baltimore") %>%
+filter(year >= "2007") %>%
+filter(year <= "2018") %>%
 
 ```
 
 ```{r}
 #4) While there is evidence for and against a nationwide Ferguson effect — the theory that crime increased after 2014 as police faced more scrutiny following the shooting of Michael Brown in Ferguson, Mo. — in Baltimore there is an indisputable Freddie Gray effect. As violence in the city has risen since 2015, the likelihood of a killer being arrested has dropped precipitously.
-
+baltimore_data_since_2015 <- baltimore_data %>%
+  group_by(year)
+  filter(year >= "2015") %>%
 
 ```
