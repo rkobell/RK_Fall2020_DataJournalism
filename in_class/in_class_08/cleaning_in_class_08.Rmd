@@ -132,7 +132,7 @@ county_covid_deaths
 Let's try answering a question again.
 
 Q: How many deaths are there in the county with FIPS code 24003 -- Anne Arundel?
-
+236 deaths
 ```{r}
 county_covid_deaths %>%
   filter(fips_code == 24003)
@@ -159,7 +159,7 @@ county_covid_deaths
 Let's try answering this question again.
 
 Q: How many counties are in Maryland?
-
+24
 ```{r}
 county_covid_deaths %>%
   group_by(state) %>%
@@ -186,7 +186,7 @@ county_covid_deaths
 Let's try answering this question again.
 
 Q: How many counties are in Maryland?
-
+24
 ```{r}
 county_covid_deaths %>%
   group_by(state) %>%
@@ -283,7 +283,7 @@ Let's try answering our question again.
 Q: How many total deaths are there in Maryland?
 
 ```{r}
-
+3744
 county_covid_deaths %>%
   summarize(total_deaths = sum(deaths))
 
