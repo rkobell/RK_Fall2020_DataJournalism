@@ -88,7 +88,7 @@ opioid_scrape <- read_csv("data/opioid_scrape.csv")
 Let's glimpse our data to get a sense of it, and display it in the markdown document. It will also be helpful to open it as a spreadsheet by clicking the dataframe name in the Environment window.
 
 What flaws jump out at you?  What problems could keep you from answering questions?  Write some of the flaws in the block below
-
+# It lists states but it doesn't give you more than that.Long column names.
 **Task (Run Code)**: run the code below to glimpse the data.
 ```{r}
 # glimpse the data
@@ -98,7 +98,7 @@ glimpse(opioid_scrape)
 opioid_scrape
 
 # What flaws did you see?
-
+# Long column names, a blank row, missing data, character columns that should be nummeric; messy data.
 ```
 
 Now, I'll walk you through what I saw.  
@@ -172,7 +172,8 @@ Now, it's your turn to use rename() to fix the opioid prescription rate column, 
 ```{r}
 opioid_scrape_clean <- opioid_scrape %>%
   clean_names() %>%
-  rename(opioid_death_rate = opioid_involved_overdose_deaths_100_000_persons1_2018) 
+  rename(opioid_death_rate = opioid_involved_overdose_deaths_100_000_persons1_2018) %>%
+ rename(opioid_prescription_rate = opioid_prescriptions_100_persons2_2018)
   # Add an additional rename() function here as instructed
 
 opioid_scrape_clean
@@ -346,8 +347,9 @@ opioid_scrape_clean <- opioid_scrape %>%
   remove_empty() %>%
   filter(state != "*Not included - Did not meet inclusion criteria") %>%
   mutate(opioid_death_rate = na_if(opioid_death_rate,"*")) %>%
-  mutate(opioid_prescription_rate = as.numeric(opioid_prescription_rate)) 
-  # Add an additional function here as instructed
+  mutate(opioid_prescription_rate = as.numeric(opioid_prescription_rate)) %>%
+  mutate(opioid_death_rate = as.numeric(opioid_death_rate)) 
+  # Add an additional function here as instructed (done - see above)
 
 
 opioid_scrape_clean
