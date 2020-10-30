@@ -116,7 +116,7 @@ baltimore_data_year_2014_2017
 #comment out on steps
 # take average amount of arrest from homicide data.
 #select for year, city, state, and disposition
-# filter for 2014 and 2017
+# filter for all years between 2014 and 2017
 # group by city, year and disposition
 # count
 #mutate to new columns - total cases closed by arrest, closed without arrest, and open, no arrests for 2014 and 2017.
@@ -205,7 +205,7 @@ city_arrest_rate_change <- homicide_data %>%
 #group by city, year, and deposition
 #count
 # mutate to replace N/A with 0
-#mutate to create new columns for closed by arresr, closed w/o arrest and open no arrest
+#mutate to create new columns for closed by arrest, closed w/o arrest and open no arrest
 #filter again for years 2014 and 2017
 #filter again for cities Baltimore, Chicago and St. Louis
 #create new frame called cities_arrest_rate
@@ -267,11 +267,20 @@ filter(year <= "2018") %>%
 #4) While there is evidence for and against a nationwide Ferguson effect — the theory that crime increased after 2014 as police faced more scrutiny following the shooting of Michael Brown in Ferguson, Mo. — in Baltimore there is an indisputable Freddie Gray effect. As violence in the city has risen since 2015, the likelihood of a killer being arrested has dropped precipitously.
 
 baltimore_data_year_2014_2017 <- baltimore_data %>%
-  group_by(year)  %>%
-  filter(year >= "2015") %>%
-pivot_wider(names_from = disposition, values_from = n) %>%
+  group_by(year, disposition)  %>%
+  summarise(total_number=n()) %>%
+pivot_wider(names_from = disposition, values_from = total_number) %>%
   mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
   mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
-  filter(year == 2014 | year == 2017)
+  filter(year == 2014 | year == 2017) %>%
+select(year, total_cases, arrest_pct)
 
+
+# year | arrests | killings | pct_arrested 
+# 2014
+# 2017
+#change the number and show how it's different. 2014 and 2015
+#there were other factors in the change in homicides
+#is it choosing the time range?
+#depending on when you start your query, your results can change so think about why you are making that decision.
 ```
