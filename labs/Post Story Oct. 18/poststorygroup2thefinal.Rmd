@@ -1,0 +1,287 @@
+---
+title: "Reverse Engineering Post Homicide Baltimore Story"
+author: "Wesley Brown, Kellina Wanteu, Audrey Decker, Rona Kobell"
+date: "10/31/2020"
+output:  
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    df_print: paged
+  md_document:
+    variant: markdown_github
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+ In Baltimore, just a few years after police killed Freddie Gray, the city saw a surge in violence, with almost one homicide a day. During the same time, arrests dropped citywide by 14 percent. This story looks at the data to determine how Baltimore fits into other cities' crime patterns, and how the violence has loomed over the city and its survivors. Here is the story:
+
+[As police struggle to solve homicides, Baltimore residents see an ‘open season for killing’](https://www.washingtonpost.com/investigations/as-police-struggle-to-solve-homicides-baltimore-residents-see-an-open-season-for-killing/2018/12/26/7ee561e4-fb24-11e8-8c9a-860ce2a8148f_story.html)
+
+## Load libraries and settings
+
+```{r}
+
+# For general data analysis
+library(tidyverse)
+
+```
+
+## Load and clean data 
+
+The data we are using comes from the GitHub repo by the Washington Post. The data (homicide-data.csv) was accumulated by the publication through uniformed FBI crime reports, public records requests and other means of acquiring records. 
+
+Washington Post GitHub: https://github.com/washingtonpost/data-homicides
+
+
+* uid | character | This is the unique ID of each data/case entry
+* reported_date | date | This is the date that the incident was reported/happened
+* victim_last | character | last name of the homicide victim
+* victim_first | character | first name of the homicide victim
+* victim_race | character | Race of the homicide victim
+* victim_age | character | Age of the homicide victim
+* victim_sex | character | Sex of the homicide victim
+* city | location | The city that the homicide occurred in
+* state | location | The state that the homicide occurred in
+* lon | location | The longitude of where the homicide occurred
+* lat | location | The latitude of where the homicide occurred
+* disposition | character | last name of the homicide victim
+* year | date | Year that the homicide occurred
+```{r}
+# loading data
+homicide_data <- read_csv("data/homicide-data.csv")
+
+#cleaning data
+homicide_data <- homicide_data %>% 
+mutate(reported_date = as.character(reported_date)) %>%
+mutate(year = str_sub(reported_date, start = 1L, end = 4L))
+
+# display the data below
+homicide_data
+
+```
+
+## Analysis
+
+### Finding 1
+
+"As Baltimore has seen a stunning surge of violence, with nearly a killing each day for the past three years in a city of 600,000, homicide arrests have plummeted. City police made an arrest in 41 percent of homicides in 2014; last year (2017), the rate was just 27 percent, a 14 percentage point drop."
+
+```{r}
+
+# Filter for Baltimore only homicides 
+baltimore_data <- homicide_data %>%
+  filter(city == "Baltimore")
+
+  
+### What we did:
+# create new object from Baltimore_data called Baltimore_data_year_2014_2017
+# select for year, reported date, city, state, and deposition of the case
+# filter for years 2014 to 2018
+# group by how it was disposed of (disposition) and by year
+# we counter the number of times it happened
+# pivot: we made the table wider so that it can give us the different values for disposition (arrest, closed by arrest, open/no arrest, etc.)
+# mutate by dividing the average value of closed_by_arrest and average value of closed_without_arrest to find the arrest percentage
+# filter for years 2014 and 2017
+ # select only those two years
+
+baltimore_data_year_2014_2017 <- baltimore_data %>%
+  select(year, reported_date, city, state, disposition) %>%
+  filter(year >= "2014") %>%
+  filter(year <= "2018") %>%
+  group_by(year, disposition) %>%
+  count() %>%
+  pivot_wider(names_from = disposition, values_from = n) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017)
+  # SELECT ONLY TWO COLUMNS, YEAR, ARREST_PCT
+ 
+
+baltimore_data_year_2014_2017
+
+
+  
+```
+
+### Finding 2
+
+"Of the nation's 50 largest cities, Baltimore is one of 34 where police now make homicide arrests less often than in 2014, according to a Washington Post analysis. In Chicago, the homicide arrest rate has dropped 21 percentage points, in Boston it has dropped 12 points and in St. Louis it is down 9."
+
+**Discussion** for Finding 2: In our data, we found that Baltimore is one of 35 cities that make homicide arrests less often than in 2014, rather than the Washington Post's finding that it was 34 cities. The reason for this discrepancy is Boston's average amount of arrests. When we used the filter function to only select cities with a percent change of greater than 0, we realized that Boston was in between 0 and 1. This accounts for our additional city in our data.
+
+```{r}
+#2) Of 50 of the nation’s largest cities, Baltimore is one of 34 where police now make homicide arrests less often than in 2014, according to a Washington Post analysis. 
+
+
+### What we did:
+# take average amount of arrest from homicide data.
+# select for year, city, state, and disposition
+# filter for all years between 2014 and 2017
+# group by city, year and disposition
+# count
+# mutate to new columns - total cases closed by arrest, closed without arrest, and open, no arrests for 2014 and 2017.
+# pivot wider to get the value of arrest percent change
+# mutate to create new column
+# filter to percent change
+ #arrange as new columns
+
+average_amount_of_arrest <- homicide_data %>%
+  select(year, reported_date, city, state, disposition) %>%
+  filter(year >= "2014") %>%
+  filter(year <= "2017") %>%
+  group_by(city, year, disposition) %>%
+  count() %>%
+  pivot_wider(names_from = disposition, values_from = n) %>%
+  mutate_if(is.numeric , replace_na, replace = 0) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017) %>%
+  select(city, year, arrest_pct) %>%
+  pivot_wider(names_from = year, values_from = arrest_pct) %>%
+  mutate(pct_change = `2014` - `2017`) %>%
+  filter(pct_change > 0) %>%
+  arrange(pct_change) %>%
+  ungroup() %>%
+  count()
+
+average_amount_of_arrest
+
+# In Chicago, the homicide arrest rate has dropped 21 percentage points, in Boston it has dropped 12 points and in St. Louis it is down 9.
+
+### What we did:
+# take cities arrest rate and city homicide data
+# select the year, the reported date, the city, the state, and the deposition
+# filter for the years 2014 to 2017
+# group by city, year, and deposition
+# counted the average value
+# pivot: made the table wider to show us values from disposition.
+# mutate to replace N/A with 0
+# mutate to create new columns for closed by arrest, closed w/o arrest and open no arrest
+# filter again for years 2014 and 2017
+# selected the city, year, arrest percentage
+# pivot to show years and values from arrest percentage
+# mutate the percentage change between 2014 and 2017
+# filter again for cities Baltimore, Chicago and St. Louis
+# create new frame called cities_arrest_rate
+# display it
+# take those three cities and filtered to find the percentage change greater than 0
+# ungroup and count the values separately
+# find the three city rates
+
+cities_arrest_rate <- homicide_data %>%
+  select(year, reported_date, city, state, disposition) %>%
+  filter(year >= "2014") %>%
+  filter(year <= "2017") %>%
+  group_by(city, year, disposition) %>%
+  count() %>%
+  pivot_wider(names_from = disposition, values_from = n) %>%
+  mutate_if(is.numeric , replace_na, replace = 0) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017) %>%
+  select(city, year, arrest_pct) %>%
+  pivot_wider(names_from = year, values_from = arrest_pct) %>%
+  mutate(pct_change = `2014` - `2017`) %>%
+  #filter(city == "Chicago" | city =="Baltimore" | city=="St. Louis") 
+  filter(city %in% c("Chicago","Baltimore", "St. Louis"))
+cities_arrest_rate
+
+cities_arrest_less <- cities_arrest_rate %>%
+  filter(pct_change > 0) %>%
+  ungroup() %>%
+  count()
+
+# Three city arrest rate
+
+three_city_rate <- cities_arrest_rate %>%
+   filter(city %in% c("Chicago","Baltimore", "St. Louis"))
+
+```
+
+
+### Finding 3
+
+Baltimore is also one of 30 cities that have seen an increase in homicides in recent years, with the greatest raw number increase in killings of any city other than Chicago, which has four times the population.
+
+**Discussion** for Finding 3:
+In the data we produced, we found that Baltimore is one of 22 cities that have seen an increase in homicides in recent years, unlike the Post's finding that it is one of 30 cities. The reason for this discrepancy is the use of their term "in recent years." We continued to change the range of our data, from 2011 to 2017, 2010 to 2017, 2009 to 2017, and so on to figure out how the Post defined recent years. However, 2011 to 2017 was the closest we could get to producing 30 cities. We believe this is because they have a more updated data set than ours, including data from more recent years. However, with the data we have, this is the closest we could get to the Post's finding.
+
+```{r}
+
+# Baltimore is also one of 30 cities that have seen an increase in homicides in recent years.
+
+city_homicide_change <- homicide_data %>%
+  group_by(city, year) %>%
+  summarise(number_homicides = n()) %>%
+  filter(year == "2011" | year == "2017") %>%
+  pivot_wider(names_from = year, values_from = number_homicides) %>%
+  mutate(homicide_change = `2017` - `2011`) %>%
+  filter(homicide_change > 0) %>%
+  arrange(desc(homicide_change))
+
+#display below
+city_homicide_change
+
+# Baltimore has had the greatest raw number increase in killings of any city but Chicago. 
+
+### What we did:
+# create new column of raw number of homicides
+# compare from 2011 to 2017 to show an increase
+# produce Chicago raw killings
+# produce Baltimore raw killings
+
+
+#display below
+city_number_homicides
+
+### What we did:  
+# created a new data and named it city homicide change
+# grouped the desired data by city and year 
+# filtered the year 2011 until 2017, everything in between
+# increased the number of columns and decreased the number of rows by using the pivot wider function. We took the names from those years listed above and the values from the number of homicides
+  # created a new variable that would give us the percent change in homicide from 2011 to 2017
+  # filtered the ones that had a change greater than 0
+  # arranged our new data from lowest to highest
+
+# Baltimore has had the greatest raw number increase in killings of any city but Chicago. 
+
+```
+
+### Finding 4 
+
+While there is evidence for and against a nationwide Ferguson effect — the theory that crime increased after 2014 as police faced more scrutiny following the shooting of Michael Brown in Ferguson, Mo. — in Baltimore there is an indisputable Freddie Gray effect. As violence in the city has risen since 2015, the likelihood of a killer being arrested has dropped precipitously.
+
+```{r}
+
+baltimore_data_year_2014_2017 <- baltimore_data %>%
+  group_by(year, disposition)  %>%
+  summarise(total_number=n()) %>%
+pivot_wider(names_from = disposition, values_from = total_number) %>%
+  mutate(total_cases = `Closed by arrest` + `Closed without arrest` + `Open/No arrest`) %>%
+  mutate(arrest_pct = `Closed by arrest` / total_cases * 100) %>%
+  filter(year == 2014 | year == 2017) %>%
+select(year, total_cases, arrest_pct)
+baltimore_data_year_2014_2017
+
+### What we did:
+# group by year and disposition
+# summarize the total number of values within those two categories
+# pivot wider to see total number from different disposition 
+# mutate to find total cases by adding values from close by arrest and closed without arrest and open/no arrest
+# mutate to find arrest percentage by dividing closed arrest by the total case we found in the previous line
+# filter from year 2014 to 2017
+# select year, total cases and arrest percentage change
+
+# NOTE: The data looks very different if you use the year 2015 instead of 2014; Freddie Gray was killed in 2015, so the Post used that year as the barometer to show the effect.
+
+
+```
+
