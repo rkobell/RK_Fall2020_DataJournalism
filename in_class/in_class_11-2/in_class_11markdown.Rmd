@@ -87,7 +87,10 @@ Now, let's display the data as a bar chart, using another function -  geom_bar()
 anne_arundel %>%
   ggplot(aes(month, case_rate)) +
   geom_bar(stat="identity") 
+x = "Month"
+y = "cases per 1000 people"
 
+geom_text(aes(label=round))
 ```
 ### Continue building the chart
 
@@ -99,7 +102,16 @@ We can keep adding functions from the ggplot2 library to improve the chart, usin
   # Display the data as a bar chart
 anne_arundel %>%
   ggplot(aes(month, case_rate)) +
-  geom_bar(stat="identity")
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Month",
+ y = "Cases per 1,000 people,"
+ title = In Anne Arundel County, Steady Increase in COVID cases"," )
+fill = "steelblue")
+x = "Month"
+y = "cases per 1000 people"
+
 
 ```
 

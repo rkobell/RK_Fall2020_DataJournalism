@@ -1,0 +1,362 @@
+---
+title: "car race deaths data"
+author: "Rayonna Burton-Jernigan, Sahana Jayaraman, Jeremy Tombs, Theresa Cotton, and Manuela Lopez Restrepo" 
+date: "11/1/2020"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    df_print: paged
+  md_document:
+    variant: markdown_github
+    toc: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+The purpose of this document is to reverse engineer four findings from "Out of Control," a story about street racing fatalities from the Los Angeles Times. We used dataframes provided by the LA Times to recreate the findings. You can find the story at the following link: [Out of control](https://www.latimes.com/projects/la-me-street-racing/).
+
+## Load libraries and options
+
+```{r}
+# Get rid of scientific notation
+options(scipen = 999)
+
+# install.packages("sf")
+
+# For cleaning data
+library(janitor)
+
+# Manipulate and analyze data by filtering, mutating and more
+library(tidyverse)
+
+# Read in spatial and geometric data 
+library(sf)
+
+# Separate and analyze by date 
+library(lubridate)
+
+```
+
+## Load and clean data
+
+STREETRACING FATALITIES is a list of the 179 people who died in suspected streetracing accidents and all of the related information. it includes: age | case number | death date and time | victim gender | victim name first | victim name last | victim role in accident | full event address | geocoding address for mapping purposes. [Street-racing-fatalities.csv](https://github.com/datadesk/street-racing-analysis/blob/master/input/street-racing-fatalities.csv)
+
+FATALITIES is a dataset derived to the streetracing dataset, but it discludes three vicitms who do not have a full event address or geocode tags and includes the city where each event ocurred (either "los-angeles" or "N/A" values).This dataset was used to create a map in the original "Out of Control" story. The set includes:  age | city | population | geometry | index-right | case number | death year | victim gender | victim name first | victim name last | victim role in accident | full event address | geocoding address for mapping purposes | is-mapped (all values = "TRUE"). [Fatalities.csv](https://github.com/datadesk/street-racing-analysis/blob/master/output/fatalities.csv)
+
+CITYPOP is a dataset that comes from a shapefile that contains the population for each area of California that had streetracing deaths included in the story. The columns are: name (of area) | city | population. 
+[hoods.shp, the shapefile we used to create citypop](https://github.com/datadesk/street-racing-analysis/blob/master/input/hoods.shp)
+
+```{r}
+# Loading in the "street-racing-fatalities" dataframe provided by the Times. This dataset includes all 179 people who died in suspected streetracing-related accidents. 
+streetracing <-read_csv("data/street-racing-fatalities.csv")
+
+# Loading in the "fatalities" dataframe provided by the Times.
+fatalities <-read_csv("data/fatalities.csv")
+
+# Loading in data about the population of different cities and neighborhoods in and around Los Angeles
+# Special form of geographic data called .shp
+citypop <- st_read("data/hoods.shp")%>%
+  as_tibble() %>%
+  select(-geometry)
+
+```
+
+## Analysis
+
+### Sentence 4
+
+Deaths have occurred all across L.A. County, with the biggest concentration in the small city of Commerce. Eleven have died on the small, industrial city’s streets since 2000.
+
+```{r}
+# creating an object called "fatalities-truncated," starting with "fatalities"
+# AND THEN selecting the columns labeled "name," "city," "death_datetime" and "death_year"=
+fatalities_truncated <- fatalities%>%
+  select(name, city, death_datetime, death_year)
+
+# Displaying the new object below 
+fatalities_truncated
+```
+
+```{r}
+# Creating a new object called commerce_deaths, starting with the fatalities_truncated object
+# AND THEN filtering fatalities_truncated for rows in the "name" column that read "Commerce" and rows in the "death_year" column that contain numbers greater than or equal to "2000" 
+
+commerce_deaths <-fatalities_truncated%>%
+  filter(name == "Commerce", death_year >= "2000")
+
+# Displaying the new object below 
+commerce_deaths
+
+```
+
+
+
+```{r}
+# Creates a new object called death_by_city, starts with the fatalities_truncated object
+# AND THEN groups the new object by city name
+# AND THEN counts the number of deaths in each city 
+# AND THEN arranges the city_deaths column from highest to lowest
+death_by_city <- fatalities_truncated%>%
+  group_by(name)%>%
+  summarise(city_deaths = n())%>%
+  arrange(desc(city_deaths))
+
+# Displaying the new object below 
+death_by_city
+```
+
+```{r}
+# Creates a new object called death_by_city_pop, starting with the death_by_city object
+# AND THEN joins the death_by_city frame with the citypop table  
+# AND THEN creates a new column called deaths_per_capita dividing the number of deaths per city by the population (multiplying by 10,000) 
+# AND THEN filters out any cities with populations less than a thousand
+# AND THEN arranges the new deaths-per_capita column from highest to lowest 
+
+death_by_city_pop <- death_by_city%>%
+ inner_join(citypop)%>%
+  mutate(deaths_per_capita = (city_deaths/population*10000))%>%
+  filter(population > 1000)%>%
+  arrange(desc(deaths_per_capita))
+
+# Displaying the new object below 
+death_by_city_pop
+
+```
+### Sentence 2
+
+The deadliest year on record was 2007, with 18 fatal crashes. After a period with relatively few recorded deaths, the count grew in recent years, with 15 fatalities in 2015, 11 in 2016 and 12 deaths in 2017, the Times analysis shows.
+
+```{r}
+
+# Creates a new object called deaths_by_year, starting with the streetracing data frame 
+# AND THEN changes all column names to be lowercase with no strange characters for easier analysis
+# AND THEN creates a new column that takes the year out of death_date_time 
+# AND THEN selects columns with the names "year," "case_num," "name_first," name_last" and "victim_role" 
+deaths_by_year <- streetracing%>%
+  clean_names()%>%
+  mutate(year = year(death_date_time))%>%
+  select(year, case_num, name_first, name_last, victim_role)
+
+# Displaying the new object below
+deaths_by_year
+
+
+```
+
+
+```{r}
+
+#This codeblock shows that "the deadliest year on record was 2007, with 18 fatal crashes" by:
+## creating a new object called deaths_grouped 
+## AND THEN grouping the deaths_by_year table by year
+## AND THEN counting the number of deaths in each year
+## AND THEN arranging  the total_deaths column from highest to lowest. 
+deaths_grouped<- deaths_by_year%>%
+  group_by(year)%>%
+  summarise(total_deaths = n())%>%
+  arrange(desc(total_deaths))
+
+# Displaying the new object below
+deaths_grouped
+
+```
+
+```{r}
+
+
+#This codeblock shows that "after a period with relatively few recorded deaths, the count grew in recent years, with 15 fatalities in 2015, 11 in 2016 and 12 deaths in 2017," 
+
+# Creates a new object called deaths_grouped_again 
+# AND THEN groups the deaths_by_year table by year
+# AND THEN counts the number of deaths in each year
+
+deaths_grouped_again<- deaths_by_year%>%
+  group_by(year)%>%
+  summarise(total_deaths = n())
+
+# Displays a table that shows that from 2009-2013, streetracing deaths were in the single digits until 2014, when they hit 11 and then 2015, with 15 deaths. 
+deaths_grouped_again
+```
+### Sentence 3
+
+The dead were overwhelmingly male and young: More than half were 21 or younger, including two children, ages 4 and 8, killed along with their mother. Slightly less than half of the victims— 47% — were behind the wheel. The rest were either passengers in the speeding vehicles, spectators or people simply walking on a sidewalk or driving home.
+
+
+```{r}
+
+#Creates a new object called 'deaths_by_year_expanded' which grabs data from "streetracing"
+#AND THEN cleans up names in object to make columns easier to work with  
+#AND THEN creates a new column called year which grabs data from column 'year'
+#AND THEN selects columns : 'year', 'gender', 'age', 'case_num', 'name_first', 'name_last', 'victim_role'
+
+deaths_by_year_expanded <- streetracing%>%
+  clean_names()%>%
+  mutate(year = year(death_date_time))%>%
+  select(year, gender, age, case_num, name_first, name_last, victim_role)
+
+# Displays new object below
+deaths_by_year_expanded
+```
+```{r}
+
+# This codeblock reproduces the finding that 47% of the victims were behind the wheel by grouping the victims by their role and then summarising the number of victims in each role - 85 of the 179 total victims were suspected racers (behind the wheel), which comes out to 47.4%, or 47% rounded. 
+
+# Creates a new object called behind_wheel 
+ ## AND THEN groups by the victim's role in the car accident 
+ ## AND THEN summarizes the number of deaths 
+ ## AND THEN mutates the victim's class depending on whether the victim's role was that of a suspected racer or not.
+ ## AND THEN groups by the victim's class
+ ## AND THEN summarizes the deaths by the sum of deaths
+ ## AND THEN rearranges the table's appearance by pivoting wider
+ ## AND THEN mutates total deaths to equal the sum of suspected racers and not suspected racers
+ ## AND THEN mutates the percentage of suspected racers to equal suspected racers divided by (total deaths multiplied by 100)
+
+behind_wheel <- deaths_by_year_expanded%>%
+  group_by(victim_role) %>%
+  summarise(deaths = n()) %>%
+  mutate(victim_class = case_when(
+    victim_role == "Suspected Racer" ~ "suspected_racer",
+    TRUE ~ "not_suspected_racer"
+  )) %>%
+  group_by(victim_class) %>%
+  summarise(deaths = sum(deaths)) %>%
+  pivot_wider(names_from = victim_class, values_from = deaths) %>%
+  mutate(total_deaths = not_suspected_racer+suspected_racer) %>%
+  mutate(pct_suspected_racer = suspected_racer/total_deaths*100)
+
+# Displays the new object below
+behind_wheel
+```
+
+
+
+
+
+```{r}
+
+# This codeblopck reproduces the finding that the dead were overwhelmingly male and young, with more than half being 27 or younger. This was for our own curiosity, not reverse-engineering any finding of the LA times. 
+
+# Create an object called "male_and_young" that grabs data from object "deaths_by_year_expanded"
+# AND THEN create a column using feature 'mutate()' that will be called "age_group"
+# AND THEN data will display 'young' for anyone that is younger than 27, and 'old' for anyone that is  above 27
+# AND THEN the information will be grouped together based off of gender and age group. 
+# AND THEN creates a new column 'n' that will display the data will be counted together to show the overall number for both old and young/ male and female
+# AND THEN arranges data in column 'n' from highest to lowest
+
+male_and_young <- deaths_by_year_expanded %>%
+  mutate(age_group = case_when(
+    age <= 27 ~ "young",
+    TRUE ~ "old"
+  )) %>%
+  group_by(gender, age_group) %>%
+  count() %>%
+  arrange(desc(n))
+
+# Displays the new object below
+male_and_young
+```
+
+```{r}
+
+# This codeblopck reproduces the finding that the dead were overwhelmingly male and young, with more than half being 21 or younger 
+
+# Create an object called "male_and_young" that grabs data from object "deaths_by_year_expanded"
+# AND THEN create a column using feature 'mutate()' that will be called "age_group"
+# AND THEN data will display 'young' for anyone that is younger than 27, and 'old' for anyone that is  above 21
+# AND THEN the information will be grouped together based off of gender and age group. 
+# AND THEN creates a new column 'n' that will display the data will be counted together to show the overall number for both old and young/ male and female
+# AND THEN arranges data in column 'n' from highest to lowest
+male_and_young <- deaths_by_year_expanded %>%
+  mutate(age_group = case_when(
+    age <= 21 ~ "young",
+    TRUE ~ "old"
+  )) %>%
+  group_by(gender, age_group) %>%
+  count() %>%
+  arrange(desc(n))
+
+# Displays the new object below
+male_and_young
+ 
+```
+
+ 
+```{r}
+# Cleans names for data frame "streetracing"
+# AND THEN arranges the data by age from lowest to highest 
+streetracing %>%
+  clean_names() %>%
+  arrange(age) 
+
+# Cleans names for data frame "streetracing"
+# filters information in death_date_time column to return rows with a death date and time of "2007-10-08 17:50:00"
+streetracing %>%
+  clean_names() %>%
+  filter(death_date_time == "2007-10-08 17:50:00")
+
+
+# creates a new object called "four_year_old"
+# AND THEN cleans names
+# AND THEN filters by age to show for ages 4 and up
+# AND THEN select the column death_date_time
+
+four_year_old <- streetracing %>%
+  clean_names() %>%
+  filter(age == 4) %>%
+  select(death_date_time)
+
+# creates a new object called "tragic_accident" that calls on information from "streeracing"
+# AND THEN inner join object "tragic_accident" with object "four_year_old"
+
+tragic_accident <- streetracing %>%
+  clean_names() %>%
+  inner_join(four_year_old)
+  
+```
+### Sentence 1 
+
+[Valentina D’Alessandro] was one of at least 179 people who have died in Los Angeles County since 2000 in accidents where street racing was suspected, according to a Los Angeles Times analysis of coroner’s records, police reports and media accounts from 2000 to 2017
+
+```{r}
+
+# This codeblock finds that there were 179 people who have died in LA county since 2000 in accidents where streetracing was suspected 
+
+# Creates a new object called finding_one, using streetracing dataframe (which contains information for  those who died in LA county suspected streetracing accidents since 2000 )
+# AND THEN cleans names to make them lowercase and easy to work with
+# AND THEN creates a new column taking year out of death_date_time
+# AND THEN filters for all the rows with years greater than or equal to 2000
+# AND THEN counts the returned rows 
+
+finding_one <- streetracing%>%
+  clean_names()%>%
+  mutate( year = year(death_date_time))%>%
+  filter( year >= 2000)%>%
+  count()
+
+# Displays the new object below 
+finding_one
+```
+```{r}
+
+# This codeblock finds that Valentia D'Alessandro was one of the 179 people killed in suspected streetracing accidents
+
+# Creates a new object called "finding valentina," starting with "streetracing"
+# AND THEN cleans names to make columns easier to work with
+# AND THEN filters for rows that have the "VALENTINA" value in the name_first column and "D'ALESSANDRO"  value in the name_last column
+finding_valentina <- streetracing%>%
+  clean_names()%>%
+  filter( name_first == "VALENTINA", name_last == "D'ALESSANDRO" )
+
+# Displaying the new object below 
+finding_valentina
+
+```
+
