@@ -1,0 +1,77 @@
+---
+title: "Climate_Data_Group_3"
+author: "Sasha Marquez, Audrey Decker, Rona Kobell, Jeremy Tombs, Rayonna Burton"
+date: "11/9/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+
+library(tidyverse)
+library(vembedr)
+
+```
+
+```{r}
+
+national_year <- read_csv("data-2c-beyond-the-limit-usa/data/processed/climdiv_national_year.csv")
+county_year <- read_csv("data-2c-beyond-the-limit-usa/data/processed/climdiv_county_year.csv")
+state_year <- read_csv("data-2c-beyond-the-limit-usa/data/processed/climdiv_state_year.csv")
+model_county <- read_csv("data-2c-beyond-the-limit-usa/data/processed/model_county.csv")
+model_state <- read_csv("data-2c-beyond-the-limit-usa/data/processed/model_state.csv")
+
+options(scipen=999)
+
+```
+
+
+```{r}
+#Create new data frame called model_state_ND_only
+model_state_ND_only <- model_state %>%
+#Filter just for the row of North Dakota data  
+  filter (fips == 38) 
+
+#Display new dataframe
+model_state_ND_only
+
+```
+
+```{r}
+#Create new data frame called model_state_sorted
+model_state_sorted <- model_state %>%
+#Sort the model_state sheet in descending order by annual average temperature change  
+  arrange (desc(Annual))
+#Display new dataframe
+model_state_sorted
+
+#North Dakota is the state in the U.S. with the seventh largest rate of annual average temperature change. Each of the states with larger change are confined to one region: New England and the mid-Atlantic. North Dakota stands out as the first state on the list not in that region, but rather much closer to the Pacific coast. Some questions emerge: how does the high rate of temperature change affect crops grown in the state? How does the high rate of temperature change affect the growing season for agriculture in the state? Are there any correlated phenomena (ie. drought, rainfall, weather conditions, etc) that can be observed as a result of the high rate of temperature change? Why is the average annual temperature change in North Dakota more comparable to states in New England rather than other states around North Dakota?
+```
+
+```{r}
+#Create new data frame called model_county_ND_sorted from the model_county dataframe
+model_county_ND_sorted <- model_county %>%
+#Filter for just North Dakota  
+  filter (STNAME == "North Dakota") %>%
+#Arrange in descending order by annual average temperature change.  
+  arrange (desc(Annual))
+
+#Display the new data frame
+model_county_ND_sorted
+
+#This dataframe arranges counties in North Dakota in descending order by average annual temperature change. The top five counties listed are all in the northernmost part of the state, which poses some questions about what the agriculture is like there, what the terrain is like, what the population and industry is like, and how these are all affected by rising temperatures. Additionally, all top 5 counties have had average annual temperature increases of at least .31 degrees higher than the state average.
+
+```
