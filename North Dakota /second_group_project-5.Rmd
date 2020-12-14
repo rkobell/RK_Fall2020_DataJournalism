@@ -1,0 +1,309 @@
+---
+title: "Climate_Data_Group_3"
+author: "Sasha Marquez, Audrey Decker, Rona Kobell, Jeremy Tombs, Rayonna Burton"
+date: "11/9/2020"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+install.packages("naniar")
+library(tidyverse)
+library(vembedr)
+library(lubridate)
+library(janitor)
+library(corrr)
+library(naniar)
+
+```
+
+##Background: Why we selected North Dakota
+
+```{r}
+
+#Read in all of the processed data from the Washington Post database
+
+national_year <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-2C-beyond-the-limit-usa/main/data/processed/climdiv_national_year.csv")
+county_year <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-2C-beyond-the-limit-usa/main/data/processed/climdiv_county_year.csv")
+state_year <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-2C-beyond-the-limit-usa/main/data/processed/climdiv_state_year.csv")
+model_county <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-2C-beyond-the-limit-usa/main/data/processed/model_county.csv")
+model_state <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-2C-beyond-the-limit-usa/main/data/processed/model_state.csv")
+drought_data <- read_csv("data/north_dakota_drought_severity_data - Sheet1.csv")
+
+options(scipen=999)
+
+```
+
+```{r}
+#Create new data frame called model_state_ND_only
+model_state_ND_only <- model_state %>%
+#Filter just for the row of North Dakota data  
+  filter (fips == 38) 
+
+```
+
+```{r}
+#Create new data frame called model_state_sorted
+model_state_sorted <- model_state %>%
+#Sort the model_state sheet in descending order by annual average temperature change  
+  arrange (desc(Annual))
+
+#North Dakota is the state in the U.S. with the seventh largest rate of annual average temperature change. Each of the states with larger change are confined to one region: New England and the mid-Atlantic. North Dakota stands out as the first state on the list not in that region, but rather much closer to the Pacific coast. Some questions emerge: how does the high rate of temperature change affect crops grown in the state? How does the high rate of temperature change affect the growing season for agriculture in the state? Are there any correlated phenomena (ie. drought, rainfall, weather conditions, etc) that can be observed as a result of the high rate of temperature change? Why is the average annual temperature change in North Dakota more comparable to states in New England rather than other states around North Dakota?
+```
+
+#Each row has the following variables, according to The Washington Post's series, "2ºC: Beyond the Limit." 
+- `fips` A five-digit fips code for the county
+- `CTYNAME` the name of the county
+- `STNAME` the name of the state
+- `Annual` Estimate of annual average temperature change in Celsius for the county, 1895-2019
+- `Fall` temperature change in September, October and November
+- `Spring` temperature change in March, April and May
+- `Summer` temperature change in June, July and August
+- `Winter` temperature change in December and the following January and February
+- `max_warming_season` the season where temperatures are increasing fastest
+
+```{r}
+#Create new data frame called model_county_ND_sorted from the model_county data frame
+model_county_ND_sorted <- model_county %>%
+#Filter for just North Dakota  
+  filter (STNAME == "North Dakota") %>%
+#Arrange in descending order by annual average temperature change.  
+  arrange (desc(Annual))
+
+#This dataframe arranges counties in North Dakota in descending order by average annual temperature change. The top five counties listed are all in the northernmost part of the state, which poses some questions about what the agriculture is like there, what the terrain is like, what the population and industry is like, and how these are all affected by rising temperatures. Additionally, all top 5 counties have had average annual temperature increases of at least .31 degrees higher than the state average.
+
+```
+
+
+##Finding 1: Looking at any correlation between increased severe drought areas in North Dakota and increased temperatures in the state.
+```{r}
+#Create new data frame called drought_data_year_filtered from the original drought_data data frame. 
+drought_data_year_filtered <- drought_data %>%
+#Using the lubridate package, create a new column called "year." Fill that column with the years from the dates in the "Week" column.  
+  mutate(year = year(Week))
+
+```
+
+```{r}
+#Create new data frame called ND_only_state_year from the state_year data frame.
+ND_only_state_year <- state_year %>%
+#Filter for just the North Dakota FIPS code, 38. This creates the same data frame as state_year but includes only the rows pertaining to North Dakota.  
+   filter (fips == "38")
+```
+
+```{r}
+#Create new data frame called yearly_drought_average from the drought_data_year_filtered data frame,
+yearly_drought_average <- drought_data_year_filtered %>%
+#Clean the column names using the janitor package to remove any dashes and capital letters.  
+  clean_names() %>%
+#Group the rows by the values in the year column.  
+  group_by(year) %>%
+#For each drought severity column, find the mean of all the values of the weeks in that year. This way, when there's only one row per year, there will be an average of all 52 weeks' data in the row for the year.
+  summarise(none=mean(none),
+            d0=mean(d0_d4),
+            d1=mean(d1_d4),
+            d2=mean(d2_d4),
+            d3=mean(d3_d4),
+            d4=mean(d4))
+```
+
+```{r}
+#Create new data frame called yearly_avg_temps_drought from the yearly_drought_average data frame.
+yearly_avg_temps_drought <- yearly_drought_average %>%
+#Join the ND_only_state_year data frame with the yearly_drought_average data frame. This will combine the two based on the column they have in common, year. It also eliminates any rows of years that are not common between the two data frames. This was important for ND_only_state_year, because the data frame listed every year from 1895, for which we did not have drought data for.
+  inner_join(ND_only_state_year)
+```
+```{r}
+#Make a line plot with a trend line of best fit for temperature change between 2000 and 2020.
+yearly_avg_temps_drought %>%
+  ggplot() + 
+  geom_line(aes(y = tempc, x = year)) +
+  geom_smooth(aes(y = tempc, x = year), method = "loess")
+
+```
+
+```{r}
+#Make a line plot with a trend line of best fit for drought severity between 2000 and 2020 to compare to the above graph.
+yearly_avg_temps_drought %>%
+  ggplot() + 
+  geom_line(aes(y = d0, x = year)) +
+  geom_smooth(aes(y = d0, x = year), method = "loess")
+
+```
+
+```{r}
+#Using the package corrr, run a correlation for the data frame yearly_avg_temps_drought. Once the new data frame loads, open it in a new tab and examine the value in the box that connects tempc and D0. This number tells us how significant the correlation between the two values is, if they are correlated at all.
+correlations <- correlate(yearly_avg_temps_drought)
+
+```
+
+```{r}
+#Using corrr, run a correlation test for tempc and D0. Rather than gtting a new data frame, it examines the correlation between tempc and d0 specifically. The Rsquared number is 0.09, which tells us that there may be some correlation between the two which can be further explored through data that goes back more than 20 years. 
+correlation_test <- lm(tempc ~ d0, data=yearly_avg_temps_drought)
+  summary (correlation_test)
+```
+
+##Finding 2: Rising temperatures in North Dakota have extended their growing season.
+
+```{r}
+
+#read in growing season data for Fargo, ND
+fargo_growing_season <- read_csv("data/fargo_growing_season.csv")
+
+```
+
+```{r}
+
+#Create a new data frame and summarize the data by decade, taking out the min/max and 2020
+season_length <- fargo_growing_season %>%
+  filter(year != "2020") %>%
+  mutate(decade = str_sub(year, start = 1L, end = 3L)) %>%
+  mutate(decade = paste0(decade, "0")) %>%
+  group_by(decade) %>%
+  summarize(season_length = mean(season_length)) %>%
+  mutate(season_length = round(season_length, 0)) %>%
+  filter(!str_detect(decade, "M"))
+
+#Create a graph below which displays the average number of days in a growing season by decade
+season_length %>%
+  ggplot(aes(decade, season_length)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  labs(
+    x="Year",
+    y="Number of days in growing season",
+    title="Average Growing Season Length of North Dakota"
+  )
+
+# Taking the fargo_growing_season data frame, we created a chart to show that from 1881 to 2020, there has been a general, upward trend of longer growing seasons. Since there are so many years, we grouped them by decades. The general progression of the data is an increased length of the growing season, which connects to the general trend of warming temperatures. This has had a positive impact on agriculture in ND because farmers have a longer time frame to grow crops. 
+
+```
+
+```{r}
+
+#Created a new data frame for a line plot
+fargo_growing_year <- fargo_growing_season %>%
+  filter(year != "2020") %>%
+  filter(!str_detect(year, "M")) %>%
+  mutate(year=as.numeric(year))
+
+#Used function to find an average line
+fargo_growing_year %>%
+  ggplot() + 
+  geom_line(aes(y = season_length, x = year)) +
+  geom_smooth(aes(y = season_length, x = year), method = "loess")
+  
+#In the line plot, we displayed every year throughout the decades. It's clear that there are outliers and the trend isn't straight up. Due to weather fluctuations, there are going to be years that are lower and higher. However, looking at the average line, the growing season in North Dakota has increased. The growing season lengthened during this period by 32 days - over a month. 
+
+```
+
+##Finding 3: Climate change's effect on Native American reservations in North Dakota.
+
+```{r}
+#Read in the tribe data.
+tribal_procounty_ND <- read_csv("https://raw.githubusercontent.com/RMBJernigan/rmbj_Jour772Data/master/Group%20Project%202/data-2C-beyond-the-limit-usa-main/data/processed/tribal_data.csv")
+
+```
+
+The next two data sets are split into two parts: To show the counties in North Dakota and to show the climate change/impact that has happened in these counties.
+```{r}
+#This chart was created to specifically look at the average change of temperature in the counties that have tribes or nations in the state. 
+#Tribes in North Dakota: Mandann, Hidatsa, Arikara Nation (three affiliated tribes), Sisseton-Wahpeton Oyate Nation, Spirit Lake Nation, Standing Rock Sioux Tribe, and Turtle Mountain Band of Chippewa Indian
+#Create a new data set that only shows the counties that have tribes
+tribal_county_ND <- model_county_ND_sorted %>%
+  #Filter by the different counties in the state that have tribes
+  filter(CTYNAME %in% c("Sioux County", "Benson County", "Richland County" ,"Sargent County","Grant County","McLean County", " Mountrail County", "Dunn County", "McKenzie County", "Mercer County", "Ward County", "Rolette County" ))
+ 
+#Display below
+tribal_county_ND
+```
+
+#This data is from ProPublica in their "New Climate Maps Show a Transformed United States" article that shows the change of climate for different counties in the United States. However for this finding wer are only looking at the counties that house tribes on the land
+#According to the Farming Crop Yields Data, by mid-century, North Dakota will warm enough to allow more growing days and higher yield will have more corn and soy production.
+#Each row has the following variables, according the ProPublica's series "New Climate Maps Show a Transformed United States" and ranges from 1 to 10.
+
+- `fips` A five-digit fips code for the county
+- `CTYNAME` the name of the county
+- `STNAME` the name of the state
+- `Heat(&Humidity)` overall heat changes in the county
+- `Wet Bulb` combination of heat and humidity 
+- `Farming Crop Yields` analysis of how the farming crops are affected
+- `Sea Level Rise` analysis of the rise of sea levels and properties being submerged by water
+- `Very Large Fires` analysis of wildfires and damage done to land 
+- `Economic Damages` analysis of damage or benefit from climate change economically
+
+```{r}
+#This a self-made chart about the ProPublica data on the climate change of the different counties around the state. In the original data set, shows  a range from 1 to 10 with 1 not being as alarming or impactful compared to 10 being very impactful and dangerous. Most of the counties in ND stay under a 5 which is good for the state as the change does not impact these counties as much. 
+#Display below
+tribal_procounty_ND 
+```
+
+##Finding 4: The effects of climate change on the harvesting seasons of individual crops in North Dakota.
+```{r}
+# Read in and clean the crop data.
+# This data will help to show the impact of climate change on the harvesting seasons of individual crops. In this finding, we will be looking at the change in the harvesting seasons for corn that is harvested for grain only, not chopped for silage. 
+corn_harvest_grain <- read.csv("https://raw.githubusercontent.com/tombsjeremy/JT_2020_Fall_Data_Journalism/master/data-2C-beyond-the-limit-usa-main/data-2C-beyond-the-limit-usa-main/data/processed/corn_harvested_for_grain.csv") %>%
+clean_names() %>%
+  t() %>%
+  as.data.frame() %>%
+  row_to_names(row_number = 1) %>%
+  rownames_to_column(var = "date") %>%
+  mutate(date = str_remove(date,"x")) %>%
+  separate(date, into = "date",sep="_") %>%
+  mutate(id = row_number()) %>%
+  select(id, date, everything()) %>%
+  mutate(month = case_when(
+    id >= 1 & id <= 30 ~ "April",
+    id >= 31 & id <= 61 ~ "May",
+    id >= 62 & id <= 91 ~ "June",
+    id >= 92 & id <= 122 ~ "July",
+    id >= 123 & id <= 152 ~ "August",
+    id >= 153 & id <= 183 ~ "September",
+    id >= 184 & id <= 214 ~ "October",
+    id >= 215 & id <= 244 ~ "November",
+    id >= 245 & id <= 275 ~ "December"
+  )) %>%
+  select(id, month, date, everything()) %>%
+  clean_names() %>%
+  rename_all(funs(str_remove(.,"_0")%>%
+str_replace(.,"x","y"))) %>%
+  na_if("#VALUE!") %>%
+  na_if("#") %>%
+  mutate_at(vars(matches("y")), as.numeric) %>%
+  rename(y00 = y2000)
+```
+
+```{r}
+# Filter for key months and years in the corn harvest data to show when the seasons have started from 2015-2020 as compared to 1985-89.
+corn_harvest_filtered_start <- corn_harvest_grain %>%
+  select(month, date, y85, y86, y87, y88, y89, y15, y16, y17, y18, y19, y20, id) %>%
+  filter(month == "September") %>%
+  filter(id != "153")
+#This filtered data set shows that the start of the harvesting season for corn has remained largely unchanged from the 1980s to the present. It generally starts within the same 20-day window, between September 10 and September 30, each year.
+```
+
+```{r}
+# Filter for key months and years in the corn harvest data to show when the seasons have ended during the past 5 years (2015-2020) as compared to 1985-89.
+corn_harvest_filtered_end <- corn_harvest_grain %>%
+  select(month, date, y85, y86, y87, y88, y89, y15, y16, y17, y18, y19, y20, id) %>%
+  filter(id >= "215") %>%
+  filter(month != "April") %>%
+  filter(month != "May") %>%
+  filter(month != "June") %>%
+  filter(month != "July")
+#This filtered data set shows that despite the start of the harvesting seasons being the same over time, there has been significant change in when those seasons end from the 1980s to now. 
+#Each season in the data from the 80s had concluded or reached the 100 percent mark by November 12. From 2015 to 2020, no seasons had concluded by that point and only one harvesting season had reached the threshold of 95 percent.
+#The length of the modern harvesting season has extended by 10-25 days when compared to seasons from 30 years prior.
+```
